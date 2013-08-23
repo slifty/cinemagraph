@@ -147,11 +147,10 @@
 			var webmBlob = Whammy.fromImageArray(self.frames, self.fps);
 			self.videoUrl = window.URL.createObjectURL(webmBlob);
 			self.preview();
-			window.
 		},
 		complete: function() {
 			var self = this;
-			self.onComplete(self.video);
+			self.settings.onComplete(self.videoUrl);
 		},
 		capture: function() {
 			var self = this;
