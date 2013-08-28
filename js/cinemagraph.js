@@ -22,13 +22,16 @@
 		init: function () {
 			// set everything up
 			var self = this;
-			self.getVideo();
+			self.getGif();
 		},
-		getVideo: function() {
+		getGif: function() {
 			var self = this;
-			self.$element.CameraToVideo({
-				onComplete: function(videoUrl) {
-					self.useVideo(videoUrl);
+			self.$element.CameraToGif({
+				onComplete: function(frames, gifUrl) {
+					self.$element.GifToCinemagraph({
+						frames: frames,
+						gifUrl: gifUrl
+					})
 				}
 			});
 		},
