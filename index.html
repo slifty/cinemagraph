@@ -9,6 +9,23 @@
 		<link href='http://fonts.googleapis.com/css?family=Bubbler+One' rel='stylesheet' type='text/css'>
 		<link rel="stylesheet" href="css/main.css" type="text/css" />
 		<link rel="stylesheet" href="css/cinemagraph.css" type="text/css" />
+		<script type="text/javascript">
+		$(function() {
+			console.log("INIT");
+			console.log($("body").html());
+			var $cinemagraph = $("#cinemagraph");
+			$("#frame1").show();
+			$("#frame1-start").click(function() {
+				$("#frame1").hide();
+				$cinemagraph.Cinemagraph();
+			});
+
+			$("#frame1-more").click(function() {
+				$("#frame1").hide();
+				$("#frame2").show();
+			});
+		});
+		</script>
 	</head>
 	<body>
 		<a id="github" href="https://github.com/slifty/cinemagraph"><img src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png" alt="Fork me on GitHub"></a>
