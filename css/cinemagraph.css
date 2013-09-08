@@ -1,0 +1,64 @@
+.cinemagraph h2 {
+	text-align: center;
+}
+
+
+/* Enable Camera Interface */
+.enableCameraInterface .image {
+	width: 200px;
+	height: 150px;
+	margin: auto;
+	border: 1px solid #888;
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+.cinemagraph-chrome .enableCameraInterface .image {
+	background-image: url("../img/chrome_share.gif");
+}
+.cinemagraph-firefox .enableCameraInterface .image {
+	background-image: url("../img/firefox_share.gif");
+}
+
+
+/* Record Interface */
+.recordInterface .startRecording { margin: auto; }
+.recordInterface .stopRecording { margin: auto; }
+.recordInterface video {
+	margin: 10px auto;
+	display: block;
+	border: 1px solid #000;
+}
+.recordInterface video.isRecording { 
+	box-shadow: 0px 0px 5px #ff0000;
+}
+
+
+/* Edit Interface */
+.editInterface .editSpace {
+	position: relative;
+	margin: 10px auto;
+	display: block;
+	border: 1px solid #000;
+}
+.editInterface .editSpace .zoneCanvas{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 2;
+}
+.editInterface .navigation {
+	margin: auto;
+	width: 310px;
+}
+.editInterface .navigation .button {
+	float: left;
+	margin: 10px;
+}
+
+
+/* Complete Interface */
+.completeInterface img {
+	margin: 10px auto;
+	border: 1px solid black;
+	display: block;
+}
