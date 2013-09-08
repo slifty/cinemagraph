@@ -17,7 +17,17 @@ h1,h2,h3,h4 { font-family: arial;}
 	border-radius: 10px;
 	padding: 10px;
 }
-#logo { margin: auto;background-image: url('../img/logo.png'); background-size: contain; background-repeat: no-repeat; width: 70%; height: 100px; text-indent: -9999; }
+#logo {
+	margin: auto;
+	background-image: url('../img/logo.png');
+	background-size: contain;
+	background-repeat: no-repeat;
+	width: 70%;
+	height: 100px;
+	text-indent: -9999px;
+	overflow: hidden;
+	display: block;
+}
 
 #cinemagraph {
 	height: 330px;
