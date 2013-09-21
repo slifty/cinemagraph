@@ -2,6 +2,10 @@
 	text-align: center;
 }
 
+/* Intro Interface */
+#frame1-start { width: 40%; }
+#frame1-more { width: 40%; }
+
 
 /* Enable Camera Interface */
 .enableCameraInterface .image {
@@ -21,8 +25,8 @@
 
 
 /* Record Interface */
-.recordInterface .startRecording { margin: auto; }
-.recordInterface .stopRecording { margin: auto; }
+.recordInterface .startRecording { }
+.recordInterface .stopRecording { }
 .recordInterface video {
 	margin: 10px auto;
 	display: block;
@@ -51,8 +55,7 @@
 	width: 310px;
 }
 .editInterface .navigation .button {
-	float: left;
-	margin: 10px;
+
 }
 
 

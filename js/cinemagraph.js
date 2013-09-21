@@ -42,6 +42,8 @@
 	var ZONE_SPEED_SLOW = .5;
 	var ZONE_SPEED_FAST = 2;
 
+	var INTERFACE_SELECT_SOURCE = "select_source";
+	var INTERFACE_VIDEO_UPLOAD = "video_upload";
 	var INTERFACE_CAMERA_INSTRUCTION = "camera_instruction";
 	var INTERFACE_PROCESSING = "processing";
 	var INTERFACE_RECORD = "record";
@@ -94,6 +96,16 @@
 			self.interface.video.controls = false;
 			self.interface.video.loop = false;
 
+			self.interface.$videoFile = $("<video>")
+				.addClass("file")
+				.height(self.settings.height)
+				.width(self.settings.width)
+				.hide()
+			self.interface.videoFile = self.interface.$videoFile[0];
+			self.interface.videoFile.autoplay = true;
+			self.interface.videoFile.controls = true;
+			self.interface.videoFile.loop = true;
+
 			// Images
 			self.interface.$recordedGif = $("<img>")
 				.hide()
@@ -116,7 +128,10 @@
 			var ctx = self.interface.zoneCanvas.getContext('2d');
 			// define a custom fillCircle method
 			ctx.fillCircle = function(x, y, radius, fillColor) {
-				this.fillStyle = fillColor;
+				var rad = ctx.createRadialGradient(x, y, 1, x, y, radius);
+				rad.addColorStop(0, 'rgba(0,0,0,1)');
+				rad.addColorStop(1, 'rgba(0,0,0,0)');
+				this.fillStyle = rad;
 				this.beginPath();
 				this.moveTo(x, y);
 				this.arc(x, y, radius, 0, Math.PI * 2, false);
@@ -148,7 +163,31 @@
 			self.interface.recordCanvas.width = self.settings.width;
 
 
-			// Recording Buttons
+			// Buttons
+			self.interface.$fromFile = $("<div>")
+				.addClass("button")
+				.addClass("fromFile")
+				.text("Use a File")
+				.click(function() {
+					self.changeInterface(INTERFACE_VIDEO_UPLOAD);
+				})
+				.hide();
+
+			self.interface.$fromCamera = $("<div>")
+				.addClass("button")
+				.addClass("fromCamera")
+				.text("Use a Camera")
+				.click(function() {
+					self.changeInterface(INTERFACE_CAMERA_INSTRUCTION);
+					navigator.getUserMedia({audio: false, video: true}, function(stream) {
+						self.cameraUrl = window.URL.createObjectURL(stream);
+						self.changeInterface(INTERFACE_RECORD);
+					}, function() {
+						console.log("You have to give permission for video capture.");
+					});
+				})
+				.hide();
+
 			self.interface.$startRecording = $("<div>")
 				.addClass("button")
 				.addClass("startRecording")
@@ -158,7 +197,7 @@
 					self.interface.$startRecording.hide();
 					self.interface.$stopRecording.show();
 				})
-				.hide()
+				.hide();
 
 			self.interface.$stopRecording = $("<div>")
 				.addClass("button")
@@ -168,7 +207,7 @@
 					self.stopRecording();
 					self.saveRecording();
 				})
-				.hide()
+				.hide();
 
 			self.interface.$saveRecording = $("<div>")
 				.addClass("button")
@@ -177,7 +216,7 @@
 				.click(function() {
 					self.completeRecording();
 				})
-				.hide()
+				.hide();
 
 			self.interface.$resetRecording = $("<div>")
 				.addClass("button")
@@ -186,7 +225,7 @@
 				.click(function() {
 					self.changeInterface(INTERFACE_RECORD);
 				})
-				.hide()
+				.hide();
 
 			// Misc
 			self.interface.$progressBar = $("<div>")
@@ -195,14 +234,52 @@
 			self.interface.$completionBar = $("<div>")
 				.addClass("complete")
 				.appendTo(self.interface.$progressBar);
+			self.interface.$videoUpload = $("<input>")
+				.attr("type", "file")
+				.attr("accept","video/*")
+				.attr("capture","camera")
+				.change(function() {
+					console.log(self.interface.videoFile);
+					var file = self.interface.$videoUpload[0].files[0];
+					var reader = new window.FileReader();
+					reader.onload = function(e) {
+						self.interface.$videoFile.show();
+						self.interface.videoFile.src = e.target.result;
+					};
+					reader.readAsDataURL(file);
+				})
+				.hide();
+
 
 			// Interfaces
+			self.interface.$selectInputInterface = $("<div>")
+				.addClass("selectInputInterface")
+				.append($("<h2>")
+					.text("Choose a Content Source"))
+				.append($("<p>")
+					.text("You can start with an existing video, or record a new one using a camera."))
+				.append(self.interface.$fromFile)
+				.append(self.interface.$fromCamera)
+				.hide()
+				.appendTo(self.$element);
+
+			self.interface.$useVideoInterface = $("<div>")
+				.addClass("useVideoInterface")
+				.append($("<h2>")
+					.text("Select a Video"))
+				.append($("<p>")
+					.text("Use this button to pick a video file from your hard drive."))
+				.append(self.interface.$videoUpload)
+				.append(self.interface.$videoFile)
+				.hide()
+				.appendTo(self.$element);
+
 			self.interface.$enableCameraInterface = $("<div>")
 				.addClass("enableCameraInterface")
 				.append($("<h2>")
 					.text("Please Enable your Camera"))
 				.append($("<p>")
-					.text("Your browser is asking you to enable the camera.  You need to allow use of your cameara to continue.  The image below shows you what you're looking for."))
+					.text("Your browser is asking you to enable the camera.  You need to allow use of your camera to continue.  The image below shows you what you're looking for."))
 				.append($("<div>")
 					.addClass("image"))
 				.hide()
@@ -260,14 +337,9 @@
 
 			// Start the show
 			if (navigator.getUserMedia) {
-				self.changeInterface(INTERFACE_CAMERA_INSTRUCTION);
-				navigator.getUserMedia({audio: false, video: true}, function(stream) {
-					self.cameraUrl = window.URL.createObjectURL(stream);
-					self.changeInterface(INTERFACE_RECORD);
-				}, function() {
-					console.log("You have to give permission for video capture.");
-				});
+				self.changeInterface(INTERFACE_SELECT_SOURCE);
 			} else {
+				self.changeInterface(INTERFACE_VIDEO_UPLOAD);
 				console.log("Your browser doesn't support video capture.");
 			}
 		},
@@ -278,11 +350,23 @@
 		changeInterface: function(target) {
 			var self = this;
 			self.interface.$enableCameraInterface.hide();
+			self.interface.$useVideoInterface.hide();
 			self.interface.$recordInterface.hide();
 			self.interface.$processingInterface.hide();
 			self.interface.$editInterface.hide();
+			self.interface.$selectInputInterface.hide();
 
 			switch(target) {
+				case INTERFACE_SELECT_SOURCE:
+					self.interface.$fromCamera.show();
+					self.interface.$fromFile.show();
+					self.interface.$selectInputInterface.show();
+					break;
+				case INTERFACE_VIDEO_UPLOAD:
+					self.interface.$videoUpload.show();
+					self.interface.$videoFile.hide();
+					self.interface.$useVideoInterface.show();
+					break;
 				case INTERFACE_CAMERA_INSTRUCTION:
 					self.interface.$enableCameraInterface.show();
 					break;
@@ -433,9 +517,10 @@
 					for(var j = 0; j < frame.data.length; j += 4) {
 						if(zone.mask.data[j + 3] == 0)
 							continue;
-						frame.data[j] = self.cinemaFrames[0].data[j];
-						frame.data[j + 1] = self.cinemaFrames[0].data[j + 1];
-						frame.data[j + 2] = self.cinemaFrames[0].data[j + 2];
+						var alpha = zone.mask.data[j + 3] / 255;
+						frame.data[j] = alpha * self.cinemaFrames[0].data[j] + (1 - alpha) * frame.data[j];
+						frame.data[j + 1] = alpha * self.cinemaFrames[0].data[j + 1] + (1 - alpha) * frame.data[j + 1];
+						frame.data[j + 2] = alpha * self.cinemaFrames[0].data[j + 2] + (1 - alpha) * frame.data[j + 2];
 					}
 					self.cinemaFrames[i] = frame;
 				}
