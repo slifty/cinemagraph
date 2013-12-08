@@ -3,6 +3,31 @@
  */
 
 ;(function ( $, window, document, undefined ) {
+
+	// We need touch events and mouse events to mean the same thing
+	function touchHandler(event) {
+	    var touch = event.changedTouches[0];
+
+	    var simulatedEvent = document.createEvent("MouseEvent");
+        simulatedEvent.initMouseEvent({
+	        touchstart: "mousedown",
+	        touchmove: "mousemove",
+	        touchend: "mouseup"
+	    }[event.type], true, true, window, 1,
+	        touch.screenX, touch.screenY,
+	        touch.clientX, touch.clientY, false,
+	        false, false, false, 0, null);
+
+	    touch.target.dispatchEvent(simulatedEvent);
+
+	    if(event.type == "touchmove")
+	    	event.preventDefault();
+	}
+
+	document.addEventListener("touchmove", touchHandler, true);
+	document.addEventListener("touchend", touchHandler, true);
+	document.addEventListener("touchstart", touchHandler, true);
+
 	window.URL = window.URL || window.webkitURL;
 	navigator.getUserMedia  =
 		navigator.getUserMedia ||
@@ -88,8 +113,6 @@
 			// Video
 			self.interface.$video = $("<video>")
 				.addClass("camera")
-				.height(self.settings.height)
-				.width(self.settings.width)
 				.hide()
 			self.interface.video = self.interface.$video[0];
 			self.interface.video.autoplay = true;
@@ -98,8 +121,6 @@
 
 			self.interface.$videoFile = $("<video>")
 				.addClass("file")
-				.height(self.settings.height)
-				.width(self.settings.width)
 				.hide()
 			self.interface.videoFile = self.interface.$videoFile[0];
 			self.interface.videoFile.autoplay = true;
@@ -149,9 +170,11 @@
 				ctx.fillCircle(x, y, radius, fillColor);
 			});
 			self.interface.$zoneCanvas.bind('mousedown', function(e) {
+				console.log("DOWN");
 				self.interface.zoneCanvas.isDrawing = true;
 			});
 			self.interface.$zoneCanvas.bind('mouseup', function(e) {
+				console.log("UP");
 				self.interface.zoneCanvas.isDrawing = false;
 			});
 
@@ -178,13 +201,37 @@
 				.addClass("fromCamera")
 				.text("Use a Camera")
 				.click(function() {
-					self.changeInterface(INTERFACE_CAMERA_INSTRUCTION);
-					navigator.getUserMedia({audio: false, video: true}, function(stream) {
-						self.cameraUrl = window.URL.createObjectURL(stream);
-						self.changeInterface(INTERFACE_RECORD);
-					}, function() {
-						console.log("You have to give permission for video capture.");
+					MediaStreamTrack.getSources(function(sourceInfos) {
+						var audioSource = null;
+						var videoSource = null;
+
+						for (var i = 0; i != sourceInfos.length; ++i) {
+							var sourceInfo = sourceInfos[i];
+							if (sourceInfo.kind === 'video') {
+								videoSource = sourceInfo.id;
+							}
+						}
+
+						sourceSelected(videoSource);
 					});
+
+					function sourceSelected(videoSource) {
+						var constraints = {
+							video: {
+								optional: [{sourceId: videoSource}]
+							}
+						};
+
+						self.changeInterface(INTERFACE_CAMERA_INSTRUCTION);
+						navigator.getUserMedia(constraints, 
+							function(stream) {
+								self.cameraUrl = window.URL.createObjectURL(stream);
+								self.changeInterface(INTERFACE_RECORD);
+							}, function() {
+								console.log("You have to give permission for video capture.");
+							}
+						);
+					}
 				})
 				.hide();
 
@@ -239,7 +286,6 @@
 				.attr("accept","video/*")
 				.attr("capture","camera")
 				.change(function() {
-					console.log(self.interface.videoFile);
 					var file = self.interface.$videoUpload[0].files[0];
 					var reader = new window.FileReader();
 					reader.onload = function(e) {
@@ -468,7 +514,6 @@
 
 			gifWorker.addEventListener('message', function (e) {
 				if (e.data.type === "progress") {
-					console.log(e.data.data)
 				} else if (e.data.type === "gif") {
 					var blob = new Blob([e.data.data], {type: 'image/gif'});
 					var url = window.URL.createObjectURL(blob);
@@ -531,7 +576,6 @@
 
 			gifWorker.addEventListener('message', function (e) {
 				if (e.data.type === "progress") {
-					console.log(e.data.data)
 				} else if (e.data.type === "gif") {
 					var blob = new Blob([e.data.data], {type: 'image/gif'});
 					var url = window.URL.createObjectURL(blob);

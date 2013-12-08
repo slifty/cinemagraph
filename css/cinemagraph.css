@@ -6,6 +6,9 @@
 #frame1-start { width: 40%; }
 #frame1-more { width: 40%; }
 
+video {
+	width: 200px;
+}
 
 /* Enable Camera Interface */
 .enableCameraInterface .image {
@@ -64,4 +67,10 @@
 	margin: 10px auto;
 	border: 1px solid black;
 	display: block;
+}
+
+@media screen and (max-width: 400px) {
+	video {
+		width: 100%;
+	}
 }

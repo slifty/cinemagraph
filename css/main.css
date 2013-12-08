@@ -1,3 +1,8 @@
+* {
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+}
 body {
 	background: #E3EAEE;
 	font-family: 'Open Sans', sans-serif;
@@ -48,4 +53,20 @@ h1,h2,h3,h4 {
 	text-align: center;
 	color: #FFF;
 	width: 90%;
+}
+
+@media screen and (max-width: 400px) {
+	#github {
+		display: none;
+	}
+	.content {
+		width: auto;
+		height: 100%;
+		margin: 0px;
+	}
+
+	#cinemagraph {
+		width: 100%;
+		padding: 0px;
+	}
 }
