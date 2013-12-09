@@ -53,6 +53,17 @@ video {
 	left: 0px;
 	z-index: 2;
 }
+.editInterface .tools {
+	margin: auto;
+	width: 310px;
+}
+
+.editInterface .tools .button {
+	width: 40%;
+	margin: 5%;
+	border-radius: 5px;
+}
+
 .editInterface .navigation {
 	margin: auto;
 	width: 310px;

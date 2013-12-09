@@ -108,6 +108,7 @@
 			self.cinemaFrames = [];
 			self.zones = [];
 			self.fps = 16;
+			self.penSize = 20;
 
 			self.data = [];
 			self.data.cinemagif = "";
@@ -170,7 +171,7 @@
 				var parentOffset = $(this).parent().offset(); 
 				var x = e.pageX - parentOffset.left;
 				var y = e.pageY - parentOffset.top;
-				var radius = 20; // or whatever
+				var radius = self.penSize;
 				var fillColor = '#000';
 				ctx.fillCircle(x, y, radius, fillColor);
 			});
@@ -261,6 +262,30 @@
 				})
 				.hide();
 
+			self.interface.$bigCircle = $("<div>")
+				.addClass("button")
+				.addClass("pen-size")
+				.addClass("size-large")
+				.text("Large Pen")
+				.click(function() {
+					self.penSize = 20;
+					$(".pen-size").removeClass("active");
+					this.addClass("active");
+				})
+				.hide();
+
+			self.interface.$smallCircle = $("<div>")
+				.addClass("button")
+				.addClass("pen-size")
+				.addClass("size-small")
+				.text("Small Pen")
+				.click(function() {
+					self.penSize = 10;
+					$(".pen-size").removeClass("active");
+					this.addClass("active");
+				})
+				.hide();
+
 			self.interface.$saveRecording = $("<div>")
 				.addClass("button")
 				.addClass("saveRecording")
@@ -282,16 +307,11 @@
 			self.interface.$shareRecording = $("<div>")
 				.addClass("button")
 				.addClass("shareRecording")
-				.text("Share Your Cinemagif")
+				.text("Save My Cinemagif")
 				.click(function() {
 					self.interface.$shareRecording.hide();
 					self.shareRecording();
 				})
-				.hide();
-
-			self.interface.$facebookShare = $("<div>")
-				.addClass("share")
-				.addClass("fb_share")
 				.hide();
 
 			self.interface.$twitterShare = $("<div>")
@@ -390,6 +410,10 @@
 				.append($("<p>")
 					.text("Now pick which parts of your video you want to keep frozen. Draw on the video to lock the parts you cover up."))
 				.append($("<div>")
+					.addClass("tools")
+					.append(self.interface.$smallCircle)
+					.append(self.interface.$bigCircle))
+				.append($("<div>")
 					.addClass("navigation")
 					.append(self.interface.$saveRecording)
 					.append(self.interface.$resetRecording))
@@ -402,7 +426,7 @@
 					.text("You're done!"))
 				.append(self.interface.$cinemaGif)
 				.append($("<p>")
-					.text("Behold your animated picture.  Do you want to be able to share it?"))
+					.text("Behold your animated picture.  Do you want to save and share it?"))
 				.append(self.interface.$shareRecording)
 				.hide()
 				.appendTo(self.$element);
@@ -411,6 +435,14 @@
 				.addClass("shareInterface")
 				.append($("<h2>")
 					.text("Ready to Share!"))
+				.append(self.interface.$twitterShare)
+				.hide()
+				.appendTo(self.$element);
+
+			self.interface.$makerInterface = $("<div>")
+				.addClass("makerInterface")
+				.append($("<h2>")
+					.text("Share on Webmaker"))
 				.hide()
 				.appendTo(self.$element);
 
@@ -435,6 +467,9 @@
 			self.interface.$processingInterface.hide();
 			self.interface.$editInterface.hide();
 			self.interface.$selectInputInterface.hide();
+			self.interface.$completeInterface.hide();
+			self.interface.$shareInterface.hide();
+			self.interface.$makerInterface.hide();
 
 			switch(target) {
 				case INTERFACE_SELECT_SOURCE:
@@ -469,6 +504,8 @@
 					self.interface.$saveRecording.show();
 					self.interface.$resetRecording.show();
 					self.interface.$editInterface.show();
+					self.interface.$bigCircle.show();
+					self.interface.$smallCircle.show();
 					break;
 				case INTERFACE_COMPLETE:
 					self.interface.$cinemaGif.show();
@@ -476,7 +513,6 @@
 					self.interface.$completeInterface.show();
 					break;
 				case INTERFACE_SHARE:
-					self.interface.$facebookShare.show();
 					self.interface.$twitterShare.show();
 					self.interface.$shareInterface.show();
 					break;
@@ -644,21 +680,25 @@
 		shareRecording: function() {
 			var self = this;
 			$.ajax({
-				'url': "api/save.php",
-				'data': {
+				method: "post",
+				url: "api/save.php",
+				data: {
 					img: self.data.cinemagif
 				},
-				'dataType': 'json',
-				'success': function(data) {
-					if('url' in data) {
-						self.interface.$facebookShare.html("<a href='http://www.facebook.com/sharer.php?src=sp&u=" + encodeURI(data.url) + "' target='_blank'></a>")
-						self.interface.$twitterShare.html("<a href='https://twitter.com/intent/tweet?text=Breaking%20News!&url=" + encodeURI(data.url) + "' target='_blank'></a>")
-						self.changeInterface(INTERFACE_SHARE);
-					} else {
-						// Something went wrong
-					}
+				dataType: 'json',
+			})
+			.done(function(data) {
+				console.log(data);
+				if('url' in data) {
+					self.interface.$twitterShare.html('<a href="https://twitter.com/share" class="twitter-share-button" data-url="'+ encodeURI(data.url) + '" data-lang="en" data-size="large" data-count="none">Tweet</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>');
+					self.changeInterface(INTERFACE_SHARE);
+				} else {
+					// Something went wrong
 				}
-			);
+			})
+			.fail(function(error) {
+				// Something went wrong
+			})
 		},
 
 		error: function(message) {

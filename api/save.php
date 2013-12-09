@@ -38,10 +38,10 @@
 		$object = $s3->upload($S3_BUCKET, $guid, $temp, 'public-read');
 
 		// Return the URL
-		echo("{'url':'".$object['ObjectURL']."'}");
+		echo('{"url":"'.$object['ObjectURL'].'"}');
 	} catch (S3Exception $e) {
 		// Something went wrong.  Bummer.
-	    echo "{'error':'There was an error uploading the file.'}";
+	    echo('{"error":"There was an error uploading the file."}');
 	}
 
 ?>
