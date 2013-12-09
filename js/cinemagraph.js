@@ -74,6 +74,8 @@
 	var INTERFACE_RECORD = "record";
 	var INTERFACE_EDIT = "edit";
 	var INTERFACE_COMPLETE = "complete";
+	var INTERFACE_SHARE = "share"
+	var INTERFACE_WEBMAKER = "webmaker"
 
 	// Create the defaults once
 	var pluginName = "Cinemagraph",
@@ -106,6 +108,9 @@
 			self.cinemaFrames = [];
 			self.zones = [];
 			self.fps = 16;
+
+			self.data = [];
+			self.data.cinemagif = "";
 			
 			self.$element.empty();
 			self.$element.addClass("cinemagraph");
@@ -274,6 +279,26 @@
 				})
 				.hide();
 
+			self.interface.$shareRecording = $("<div>")
+				.addClass("button")
+				.addClass("shareRecording")
+				.text("Share Your Cinemagif")
+				.click(function() {
+					self.interface.$shareRecording.hide();
+					self.shareRecording();
+				})
+				.hide();
+
+			self.interface.$facebookShare = $("<div>")
+				.addClass("share")
+				.addClass("fb_share")
+				.hide();
+
+			self.interface.$twitterShare = $("<div>")
+				.addClass("share")
+				.addClass("twitter_share")
+				.hide();
+
 			// Misc
 			self.interface.$progressBar = $("<div>")
 				.addClass("progress")
@@ -377,9 +402,18 @@
 					.text("You're done!"))
 				.append(self.interface.$cinemaGif)
 				.append($("<p>")
-					.text("Behold your animated picture.  Eventually this will actually be saved somewhere, but for now you can look at how cool it is."))
+					.text("Behold your animated picture.  Do you want to be able to share it?"))
+				.append(self.interface.$shareRecording)
 				.hide()
 				.appendTo(self.$element);
+
+			self.interface.$shareInterface = $("<div>")
+				.addClass("shareInterface")
+				.append($("<h2>")
+					.text("Ready to Share!"))
+				.hide()
+				.appendTo(self.$element);
+
 
 			// Start the show
 			if (navigator.getUserMedia) {
@@ -438,7 +472,16 @@
 					break;
 				case INTERFACE_COMPLETE:
 					self.interface.$cinemaGif.show();
+					self.interface.$shareRecording.show();
 					self.interface.$completeInterface.show();
+					break;
+				case INTERFACE_SHARE:
+					self.interface.$facebookShare.show();
+					self.interface.$twitterShare.show();
+					self.interface.$shareInterface.show();
+					break;
+				case INTERFACE_WEBMAKER:
+					self.interface.$makerInterface.show();
 					break;
 			}
 		},
@@ -579,7 +622,8 @@
 				} else if (e.data.type === "gif") {
 					var blob = new Blob([e.data.data], {type: 'image/gif'});
 					var url = window.URL.createObjectURL(blob);
-					url = "data:image/gif;base64," + $.base64.encode(e.data.data);
+					self.data.cinemagif = $.base64.encode(e.data.data);
+					url = "data:image/gif;base64," + self.data.cinemagif;
 					self.interface.cinemaGif.src = url;
 					self.changeInterface(INTERFACE_COMPLETE);
 				}
@@ -597,6 +641,25 @@
 			});
 		},
 
+		shareRecording: function() {
+			var self = this;
+			$.ajax({
+				'url': "api/save.php",
+				'data': {
+					img: self.data.cinemagif
+				},
+				'dataType': 'json',
+				'success': function(data) {
+					if('url' in data) {
+						self.interface.$facebookShare.html("<a href='http://www.facebook.com/sharer.php?src=sp&u=" + encodeURI(data.url) + "' target='_blank'></a>")
+						self.interface.$twitterShare.html("<a href='https://twitter.com/intent/tweet?text=Breaking%20News!&url=" + encodeURI(data.url) + "' target='_blank'></a>")
+						self.changeInterface(INTERFACE_SHARE);
+					} else {
+						// Something went wrong
+					}
+				}
+			);
+		},
 
 		error: function(message) {
 			var self = this;

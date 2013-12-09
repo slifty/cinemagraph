@@ -1,0 +1,1 @@
+## This folder needs to be writable by the server, it contains temporary image files before they have been uploaded to S3 ##

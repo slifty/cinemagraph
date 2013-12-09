@@ -1,1 +1,5 @@
 *.DS_Store
+api/conf.php
+api/vendor/*
+api/composer.lock
+api/tmp/*.gif
